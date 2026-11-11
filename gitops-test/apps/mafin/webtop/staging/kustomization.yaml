@@ -6,5 +6,5 @@ resources:
   - deployment.yaml
 images:
   - name: public.ecr.aws/nginx/nginx
-    newTag: 1.31.8
-    digest: sha256:875df6964525450b1b459b44df8225d2a514a00b72a8e059967e3c38724a486c
+    newTag: 1.31.7
+    digest: sha256:aa221d5fa45aab5c901e245bc653a537aecfdf7977169fda8b0b41200ddd3223
