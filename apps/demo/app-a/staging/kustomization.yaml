@@ -4,4 +4,4 @@ resources:
 - deployment.yaml
 images:
 - name: public.ecr.aws/nginx/nginx
-  newTag: does-not-exist
+  newTag: 1.31.8
