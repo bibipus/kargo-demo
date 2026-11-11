@@ -1,0 +1,47 @@
+# Promotion steps shared by every application Kargo promotes (see docs/kargo.md).
+# A Stage calls a task and passes the variables below; Kargo fills in the image version
+# from the Freight being promoted.
+apiVersion: kargo.akuity.io/v1alpha1
+kind: ClusterPromotionTask
+metadata:
+  name: set-image-version
+spec:
+  vars:
+    - name: image     # image as named in the kustomization's images block
+    - name: path      # directory with the kustomization.yaml, from the repository root
+    - name: argoApp   # Argo CD Application deploying that directory
+  steps:
+    - uses: git-clone
+      config:
+        repoURL: https://github.com/bibipus/kargo-demo
+        checkout:
+          - branch: main
+            path: ./repo
+    # Writes tag and digest of the promoted image into the images block. Two updates
+    # instead of kustomize-set-image, which writes either a tag or a digest, not both.
+    - uses: yaml-update
+      as: update
+      config:
+        path: ./repo/${{ vars.path }}/kustomization.yaml
+        updates:
+          - key: images.0.newTag
+            value: ${{ imageFrom(vars.image).Tag }}
+          - key: images.0.digest
+            value: ${{ imageFrom(vars.image).Digest }}
+    # Skipped when the version is already there, e.g. when promoting what already runs.
+    - uses: git-commit
+      as: commit
+      config:
+        path: ./repo
+        message: "Promote ${{ vars.argoApp }} to ${{ imageFrom(vars.image).Tag }} (Kargo ${{ ctx.promotion }})"
+    # Straight to main. Once main requires pull requests, this becomes a PR that Kargo merges.
+    - uses: git-push
+      config:
+        path: ./repo
+    # Refreshes and syncs the Application now instead of within three minutes, and makes
+    # Kargo watch its health. No revision: other commits on main move the Application's
+    # revision, and a fixed one would mark the Stage unhealthy after every unrelated push.
+    - uses: argocd-update
+      config:
+        apps:
+          - name: ${{ vars.argoApp }}
