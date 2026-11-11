@@ -17,4 +17,4 @@ spec:
   promotionPolicies:
     - stageSelector:
         name: webtop-staging
-      autoPromotionEnabled: false
+      autoPromotionEnabled: true
