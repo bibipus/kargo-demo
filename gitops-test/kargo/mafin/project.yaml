@@ -1,0 +1,20 @@
+# Kargo Project for the applications in the mafin namespace. Kargo creates a namespace
+# of the Project's name, so it cannot be called mafin (see docs/kargo.md).
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  name: mafin-releases
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"   # before the Warehouses and Stages in its namespace
+---
+# Promotions are started by hand for now. Listed explicitly so turning one on is a one-line change.
+apiVersion: kargo.akuity.io/v1alpha1
+kind: ProjectConfig
+metadata:
+  name: mafin-releases
+  namespace: mafin-releases
+spec:
+  promotionPolicies:
+    - stageSelector:
+        name: webtop-staging
+      autoPromotionEnabled: false
