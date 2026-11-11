@@ -1,0 +1,10 @@
+# Webtop on stg-gke-ew3. The image version lives here, not in deployment.yaml: the images
+# block below is the only place to change it (see docs/mafin.md).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+images:
+  - name: public.ecr.aws/nginx/nginx
+    newTag: 1.31.8
+    digest: sha256:875df6964525450b1b459b44df8225d2a514a00b72a8e059967e3c38724a486c
