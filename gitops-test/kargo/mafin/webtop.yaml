@@ -1,0 +1,42 @@
+# Webtop: which versions Kargo offers, and where it writes the one promoted.
+# Promoted by hand: Webtop is built against a Coreo client version, so check that the
+# Coreo on staging matches before promoting (docs/mafin.md).
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: webtop
+  namespace: mafin-releases
+spec:
+  subscriptions:
+    - image:
+        repoURL: public.ecr.aws/nginx/nginx
+        # Release tags only (X.Y.Z); branch, SHA and main tags are not semantic versions.
+        imageSelectionStrategy: SemVer
+        constraint: ">=1.29.0"
+        discoveryLimit: 10
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: webtop-staging
+  namespace: mafin-releases
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: webtop
+      sources:
+        direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - task:
+            name: set-image-version
+            kind: ClusterPromotionTask
+          vars:
+            - name: image
+              value: public.ecr.aws/nginx/nginx
+            - name: path
+              value: gitops-test/apps/mafin/webtop/staging
+            - name: argoApp
+              value: webtop-staging
